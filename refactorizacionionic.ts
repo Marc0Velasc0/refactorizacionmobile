@@ -3,59 +3,61 @@
   templateUrl: './p.component.html',
 })
 export class PComponent implements OnInit {
-  i: any[] = [];
-  t = 0;
-  l = false;
-  s = '';
+  items: any[] = [];
+  total = 0;
+  carga = false;
+  mensaje_estado = '';
+  private readonly dataUrl = 'https://api.example.com/data';
+  private readonly saveUrl = 'https://api.example.com/save';
 
-  constructor(private h: HttpClient) {}
+  constructor(private httpClient: HttpClient) {}
 
   ngOnInit() {
-    this.l = true;
-    this.h.get('https://api.example.com/data').subscribe(
-      (d: any) => {
-        this.i = d;
-        this.c();
-        this.l = false;
+    this.carga = true;
+    this.httpClient.get(this.dataUrl).subscribe(
+      (data: any[]) => {
+        this.items = data;
+        this.calcularTotal();
+        this.carga = false;
       },
-      (e) => {
-        console.log('Error', e);
-        this.s = 'Error al cargar datos';
-        this.l = false;
+      (error) => {
+        console.error('Error al cargar datos', error);
+        this.mensaje_estado = 'Error al cargar datos';
+        this.carga = false;
       }
     );
   }
 
-  a(p) {
-    this.i.push(p);
-    this.c();
+  agregarItem(item: any): void {
+    this.items.push(item);
+    this.calcularTotal();
   }
 
-  r(idx) {
-    this.i.splice(idx, 1);
-    this.c();
+  eliminarItem(index: number): void {
+    this.items.splice(index, 1);
+    this.calcularTotal();
   }
 
-  c() {
-    this.t = 0;
-    for (let j = 0; j < this.i.length; j++) {
-      if (this.i[j].a === true) {
-        this.t += this.i[j].p * this.i[j].q;
+  calcularTotal(): void {
+    this.total = 0;
+    for (const item of this.items) {
+      if (item.a === true) {
+        this.total += item.p * item.q;
       }
     }
   }
 
-  sv() {
-    this.l = true;
-    this.h.post('https://api.example.com/save', this.i).subscribe(
+  guardarDatos(): void {
+    this.carga = true;
+    this.httpClient.post(this.saveUrl, this.items).subscribe(
       () => {
-        this.s = 'Guardado correctamente';
-        this.l = false;
+        this.mensaje_estado = 'Guardado correctamente';
+        this.carga = false;
       },
-      (e) => {
-        this.s = 'Error al guardar';
-        console.log('Error', e);
-        this.l = false;
+      (error) => {
+        console.error('Error al guardar datos', error);
+        this.mensaje_estado = 'Error al guardar';
+        this.carga = false;
       }
     );
   }
